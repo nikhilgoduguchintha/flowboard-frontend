@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* ─── Color Tokens ────────────────────────────────────────────────────────── */
+
+:root {
+  /* Background layers */
+  --background: 248 249 251; /* #F8F9FB */
+  --surface: 255 255 255; /* #FFFFFF */
+  --surface-alt: 241 243 248; /* #F1F3F8 */
+
+  /* Borders */
+  --border: 226 230 239; /* #E2E6EF */
+  --border-strong: 203 210 224; /* #CBD2E0 */
+
+  /* Accent */
+  --accent: 79 107 237; /* #4F6BED */
+  --accent-hover: 61 89 219; /* #3D59DB */
+  --accent-light: 238 241 253; /* #EEF1FD */
+
+  /* Text */
+  --text-primary: 15 23 42; /* #0F172A */
+  --text-secondary: 100 116 139; /* #64748B */
+  --text-tertiary: 148 163 184; /* #94A3B8 */
+
+  /* Semantic */
+  --success: 16 185 129; /* #10B981 */
+  --success-light: 209 250 229; /* #D1FAE5 */
+  --warning: 245 158 11; /* #F59E0B */
+  --warning-light: 254 243 199; /* #FEF3C7 */
+  --error: 239 68 68; /* #EF4444 */
+  --error-light: 254 226 226; /* #FEE2E2 */
+  --info: 59 130 246; /* #3B82F6 */
+  --info-light: 219 234 254; /* #DBEAFE */
+
+  /* Issue Priority */
+  --priority-critical: 239 68 68; /* #EF4444 */
+  --priority-high: 249 115 22; /* #F97316 */
+  --priority-medium: 245 158 11; /* #F59E0B */
+  --priority-low: 107 114 128; /* #6B7280 */
+
+  /* Issue Status */
+  --status-backlog: 148 163 184; /* #94A3B8 */
+  --status-todo: 100 116 139; /* #64748B */
+  --status-progress: 59 130 246; /* #3B82F6 */
+  --status-review: 139 92 246; /* #8B5CF6 */
+  --status-testing: 245 158 11; /* #F59E0B */
+  --status-done: 16 185 129; /* #10B981 */
+  --status-resolved: 5 150 105; /* #059669 */
+  --status-closed: 107 114 128; /* #6B7280 */
+
+  /* Issue Type */
+  --type-epic: 139 92 246; /* #8B5CF6 */
+  --type-story: 59 130 246; /* #3B82F6 */
+  --type-task: 16 185 129; /* #10B981 */
+  --type-bug: 239 68 68; /* #EF4444 */
+  --type-subtask: 100 116 139; /* #64748B */
+}
+
+/* ─── Base Styles ─────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--text-primary));
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+    sans-serif;
+  line-height: 1.5;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-strong));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--text-tertiary));
+}
+
+/* ─── Focus Ring ──────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* ─── Selection ───────────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: rgb(var(--accent-light));
+  color: rgb(var(--accent));
+}
+
+/* ─── Tailwind Custom Utilities ───────────────────────────────────────────── */
+
+@layer utilities {
+  .bg-background {
+    background-color: rgb(var(--background));
+  }
+  .bg-surface {
+    background-color: rgb(var(--surface));
+  }
+  .bg-surface-alt {
+    background-color: rgb(var(--surface-alt));
+  }
+
+  .text-primary {
+    color: rgb(var(--text-primary));
+  }
+  .text-secondary {
+    color: rgb(var(--text-tertiary));
+  }
+  .text-tertiary {
+    color: rgb(var(--text-tertiary));
+  }
+
+  .border-default {
+    border-color: rgb(var(--border));
+  }
+  .border-strong {
+    border-color: rgb(var(--border-strong));
+  }
+
+  .accent {
+    color: rgb(var(--accent));
+  }
+  .bg-accent {
+    background-color: rgb(var(--accent));
+  }
+  .bg-accent-light {
+    background-color: rgb(var(--accent-light));
+  }
+}
