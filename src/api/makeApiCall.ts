@@ -19,11 +19,17 @@ axiosRetry(axiosInstance, {
   retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
-    // Only retry network errors or 5xx — never retry 4xx
-    return (
-      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-      (error.response?.status ?? 0) >= 500
-    );
+    const status = error.response?.status ?? 0;
+    const method = error.config?.method?.toUpperCase();
+
+    // Never retry 4xx — client errors (auth, validation, not found)
+    if (status >= 400 && status < 500) return false;
+
+    // Never retry non-GET requests with no response (CORS, network)
+    if (status === 0 && method !== "GET") return false;
+
+    // Retry 5xx and GET network errors
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) || status >= 500;
   },
 });
 
