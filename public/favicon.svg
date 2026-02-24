@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F6BED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6B8AF0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9B6CF5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="32" height="32" rx="8" fill="url(#grad)" />
+  <!-- Bold F -->
+  <text
+    x="8"
+    y="24"
+    font-family="Georgia, serif"
+    font-size="22"
+    font-weight="bold"
+    fill="white"
+    letter-spacing="-1"
+  >F</text>
+</svg>
