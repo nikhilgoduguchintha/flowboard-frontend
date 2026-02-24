@@ -127,7 +127,7 @@ export function CreateIssueForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       type: "task",
