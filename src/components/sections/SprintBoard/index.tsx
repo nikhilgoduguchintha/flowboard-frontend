@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useIssues, useUpdateIssueStatus } from "../../../hooks/useIssues";
 import { useIssueFilters } from "../../../hooks/useIssueFilters";
-// import { useMembers } from "../../../hooks/useMembers";
+import { useActiveSprint } from "../../../hooks/useSprints";
 import { BoardColumn } from "./BoardColumn";
 import { BoardSkeleton } from "../../ui/Skeleton";
 import { PageError } from "../../ui/PageError";
 import { Button } from "../../ui/Button";
+import { Modal } from "../../ui/Modal";
+import { CreateIssueForm } from "../../forms/CreateIssueForm";
 import type { Issue, IssueStatus } from "../../../types";
 import {
   DndContext,
@@ -30,10 +32,47 @@ const COLUMNS: { status: IssueStatus; label: string }[] = [
   { status: "done", label: "Done" },
 ];
 
+// ─── Sprint Meta ──────────────────────────────────────────────────────────────
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function getTimeRemaining(endDate: string): string {
+  const now = new Date();
+  const end = new Date(endDate);
+  const diffMs = end.getTime() - now.getTime();
+
+  if (diffMs <= 0) return "Ended";
+
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (days > 0) return `${days}d left`;
+  if (hours > 0) return `${hours}h left`;
+  return "Ending soon";
+}
+
+function getTimeRemainingColor(endDate: string): string {
+  const diffMs = new Date(endDate).getTime() - Date.now();
+  const days = diffMs / (1000 * 60 * 60 * 24);
+
+  if (days <= 0) return "rgb(var(--error))";
+  if (days <= 2) return "rgb(var(--warning))";
+  return "rgb(var(--success))";
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
   const { sprintId, setIssueId } = useIssueFilters();
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
-  const [, setCreateOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  const { activeSprint } = useActiveSprint(projectId);
 
   const {
     data: issues,
@@ -44,7 +83,6 @@ export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
     sprintId: sprintId || undefined,
   });
 
-//   const { data: members } = useMembers(projectId);
   const { mutate: updateStatus } = useUpdateIssueStatus(projectId);
 
   const sensors = useSensors(
@@ -61,7 +99,6 @@ export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveIssue(null);
-
     if (!over) return;
 
     const issueId = active.id as string;
@@ -91,22 +128,47 @@ export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
         style={{ borderBottom: "1px solid rgb(var(--border))" }}
       >
-        <div className="flex items-center gap-2">
-          <span
-            className="text-sm font-medium"
-            style={{ color: "rgb(var(--text-primary))" }}
-          >
-            Sprint Board
-          </span>
-          <span
-            className="text-xs px-2 py-0.5 rounded-full"
-            style={{
-              backgroundColor: "rgb(var(--accent-light))",
-              color: "rgb(var(--accent))",
-            }}
-          >
-            {sprintStatus}
-          </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Title + status */}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm font-medium"
+              style={{ color: "rgb(var(--text-primary))" }}
+            >
+              {activeSprint?.name ?? "Sprint Board"}
+            </span>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: "rgb(var(--accent-light))",
+                color: "rgb(var(--accent))",
+              }}
+            >
+              {sprintStatus}
+            </span>
+          </div>
+
+          {/* Sprint dates + time remaining */}
+          {activeSprint?.start_date && activeSprint?.end_date && (
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xs"
+                style={{ color: "rgb(var(--text-tertiary))" }}
+              >
+                📅 {formatDate(activeSprint.start_date)} →{" "}
+                {formatDate(activeSprint.end_date)}
+              </span>
+              <span
+                className="text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: "rgb(var(--surface-alt))",
+                  color: getTimeRemainingColor(activeSprint.end_date),
+                }}
+              >
+                ⏱ {getTimeRemaining(activeSprint.end_date)}
+              </span>
+            </div>
+          )}
         </div>
 
         <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -133,7 +195,6 @@ export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
           ))}
         </div>
 
-        {/* Drag overlay — shows card being dragged */}
         <DragOverlay>
           {activeIssue && (
             <IssueCard
@@ -144,6 +205,21 @@ export function SprintBoard({ projectId, sprintStatus }: SprintBoardProps) {
           )}
         </DragOverlay>
       </DndContext>
+
+      {/* Create Issue Modal */}
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create issue"
+        size="md"
+      >
+        <CreateIssueForm
+          projectId={projectId}
+          sprintId={sprintId || undefined}
+          onSuccess={() => setCreateOpen(false)}
+          onCancel={() => setCreateOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }

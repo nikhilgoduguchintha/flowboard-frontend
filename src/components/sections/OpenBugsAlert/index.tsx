@@ -7,7 +7,7 @@ interface OpenBugsAlertProps {
 }
 
 export function OpenBugsAlert({ projectId, openBugs }: OpenBugsAlertProps) {
-  const { setType, setIssueId } = useIssueFilters();
+  const { setView, setType, setIssueId } = useIssueFilters();
   const { data: issues } = useIssues(projectId, { type: "bug" });
 
   const openBugsList =
@@ -45,7 +45,10 @@ export function OpenBugsAlert({ projectId, openBugs }: OpenBugsAlertProps) {
           </p>
         </div>
         <button
-          onClick={() => setType("bug")}
+          onClick={() => {
+            void setView("backlog");
+            void setType("bug");
+          }}
           className="text-xs hover:underline"
           style={{ color: "#EA580C" }}
         >

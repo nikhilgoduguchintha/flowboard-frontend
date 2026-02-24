@@ -9,7 +9,6 @@ import { Login } from "../pages/Login";
 import { Signup } from "../pages/Signup";
 import { Dashboard } from "../pages/Dashboard";
 import { Project } from "../pages/Project";
-import { IssueDetail } from "../pages/IssueDetail";
 
 export function AppRouter() {
   return (
@@ -33,7 +32,6 @@ export function AppRouter() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="project/:projectId" element={<Project />} />
-          <Route path="issue/:issueId" element={<IssueDetail />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

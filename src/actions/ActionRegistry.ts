@@ -23,6 +23,11 @@ interface InvalidateCommentsAction extends BaseAction {
   issueId: string;
 }
 
+interface InvalidateActivityAction extends BaseAction {
+  type: "invalidate_activity";
+  projectId: string;
+}
+
 interface MoveCardAction extends BaseAction {
   type: "move_card";
   cardId: string;
@@ -59,6 +64,7 @@ type Action =
   | InvalidateLayoutAction
   | InvalidateIssuesAction
   | InvalidateCommentsAction
+  | InvalidateActivityAction
   | MoveCardAction
   | RemoveCardAction
   | UpdateProgressAction
@@ -138,6 +144,13 @@ export const ActionRegistry = {
         queryClient.invalidateQueries({
           queryKey: ["comments", action.issueId],
         });
+        break;
+      }
+
+      // ── Activity ─────────────────────────────────────────────────────────────
+      case "invalidate_activity": {
+        const pid = action.projectId ?? projectId;
+        queryClient.invalidateQueries({ queryKey: ["activity", pid] });
         break;
       }
 

@@ -48,9 +48,15 @@ export function useCreateIssue(projectId: string) {
       storyPoints?: number;
     }) => issuesApi.create(projectId, payload),
 
-    onSuccess: () => {
+    onSuccess: ({ issue, autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue created");
+      if (autoPromoted) {
+        toast.info(
+          `"${issue.title}" was created and auto-promoted to To Do — issues assigned to a sprint can't stay in Backlog`
+        );
+      } else {
+        toast.success("Issue created");
+      }
     },
 
     onError: (err) => {
@@ -76,28 +82,31 @@ export function useUpdateIssueStatus(projectId: string) {
       status: IssueStatus;
     }) => issuesApi.updateStatus(issueId, status),
 
-    // Optimistic update
     onMutate: async ({ issueId, status }) => {
       await queryClient.cancelQueries({ queryKey: ["issues", projectId] });
 
-      const previous = queryClient.getQueryData<Issue[]>(["issues", projectId]);
+      // Snapshot ALL matching caches (handles filters like sprintId, type, etc.)
+      const previousQueries = queryClient.getQueriesData<Issue[]>({
+        queryKey: ["issues", projectId],
+      });
 
-      queryClient.setQueryData<Issue[]>(
-        ["issues", projectId],
+      // Optimistically update ALL matching caches
+      queryClient.setQueriesData<Issue[]>(
+        { queryKey: ["issues", projectId] },
         (old) =>
           old?.map((issue) =>
             issue.id === issueId ? { ...issue, status } : issue
           ) ?? []
       );
 
-      return { previous };
+      return { previousQueries };
     },
 
     onError: (_err, _vars, context) => {
-      // Rollback
-      if (context?.previous) {
-        queryClient.setQueryData(["issues", projectId], context.previous);
-      }
+      // Rollback all caches to their previous state
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast.error("Failed to update status");
     },
 
@@ -131,10 +140,16 @@ export function useUpdateIssue(projectId: string) {
       };
     }) => issuesApi.update(issueId, payload),
 
-    onSuccess: (updated) => {
+    onSuccess: ({ issue, autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      queryClient.setQueryData(["issue", updated.id], updated);
-      toast.success("Issue updated");
+      queryClient.setQueryData(["issue", issue.id], issue);
+      if (autoPromoted) {
+        toast.info(
+          `"${issue.title}" was auto-promoted to To Do — issues assigned to a sprint can't stay in Backlog`
+        );
+      } else {
+        toast.success("Issue updated");
+      }
     },
 
     onError: (err) => {

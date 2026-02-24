@@ -1,5 +1,6 @@
 import { ComponentRegistry } from "./ComponentRegistry";
 import type { ResolvedSection } from "../types";
+import { Settings } from "@/pages/Settings";
 
 interface SDUIRendererProps {
   layout: ResolvedSection[];
@@ -8,6 +9,9 @@ interface SDUIRendererProps {
 }
 
 export function SDUIRenderer({ layout, projectId, view }: SDUIRendererProps) {
+  if (view === "settings") {
+    return <Settings projectId={projectId} />;
+  }
   // Filter sections relevant to current view
   const visibleSections = filterByView(layout, view);
 
@@ -52,21 +56,15 @@ export function SDUIRenderer({ layout, projectId, view }: SDUIRendererProps) {
 const BOARD_SECTIONS = [
   "sprint_board",
   "kanban_board",
-  "sprint_timer",
   "sprint_planning",
   "sprint_completion",
   "overdue_alert",
   "open_bugs_alert",
-  "onboarding",
   "activity_feed",
   "my_issues",
 ];
 
 const BACKLOG_SECTIONS = ["backlog_panel", "analytics_panel"];
-
-const SETTINGS_SECTIONS: string[] = [];
-// settings view is handled by a dedicated settings component
-// not SDUI driven — no sections needed
 
 function filterByView(
   layout: ResolvedSection[],
@@ -77,8 +75,6 @@ function filterByView(
       return layout.filter((s) => BOARD_SECTIONS.includes(s.sectionKey));
     case "backlog":
       return layout.filter((s) => BACKLOG_SECTIONS.includes(s.sectionKey));
-    case "settings":
-      return layout.filter((s) => SETTINGS_SECTIONS.includes(s.sectionKey));
     default:
       return layout;
   }

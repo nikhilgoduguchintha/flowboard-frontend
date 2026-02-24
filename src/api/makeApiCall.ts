@@ -89,7 +89,7 @@ interface ApiCallConfig {
   url: string;
   body?: unknown;
   params?: Record<string, unknown>;
-  unwrap?: string; // response field to extract e.g. 'issues', 'sprint'
+  unwrap?: string | string[];
 }
 
 export async function makeApiCall<T>({
@@ -111,6 +111,13 @@ export async function makeApiCall<T>({
 
     // Unwrap specific field if requested
     if (unwrap) {
+      if (Array.isArray(unwrap)) {
+        // Return object with all requested keys
+        return unwrap.reduce((acc, key) => {
+          acc[key] = response.data[key];
+          return acc;
+        }, {} as Record<string, unknown>) as T;
+      }
       return response.data[unwrap] as T;
     }
 

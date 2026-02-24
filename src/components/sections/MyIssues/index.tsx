@@ -23,7 +23,7 @@ export function MyIssues({ projectId }: MyIssuesProps) {
   });
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
@@ -66,7 +66,7 @@ export function MyIssues({ projectId }: MyIssuesProps) {
       )}
 
       {!isLoading && !isError && issues?.length === 0 && (
-        <div className="flex flex-col items-center justify-center flex-1 py-12">
+        <div className="flex flex-col items-center justify-center py-10">
           <p
             className="text-sm font-medium mb-1"
             style={{ color: "rgb(var(--text-primary))" }}
@@ -82,16 +82,18 @@ export function MyIssues({ projectId }: MyIssuesProps) {
         </div>
       )}
 
-      <div className="overflow-auto flex-1">
-        {issues?.map((issue) => (
-          <IssueRow
-            key={issue.id}
-            issue={issue}
-            projectId={projectId}
-            onClick={() => setIssueId(issue.id)}
-          />
-        ))}
-      </div>
+      {!isLoading && !isError && (issues?.length ?? 0) > 0 && (
+        <div className="overflow-auto max-h-80">
+          {issues?.map((issue) => (
+            <IssueRow
+              key={issue.id}
+              issue={issue}
+              projectId={projectId}
+              onClick={() => setIssueId(issue.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

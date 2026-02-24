@@ -1,4 +1,3 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -7,7 +6,6 @@ import { commentsApi } from "../api/comments.api";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import { Avatar } from "../components/ui/Avatar";
-// import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
 import { PageError } from "../components/ui/PageError";
@@ -16,18 +14,23 @@ import { getStatusColors, STATUS_LABELS } from "../utils/statusColors";
 import { getPriorityColors, PRIORITY_LABELS } from "../utils/priorityColors";
 import { getTypeColors, TYPE_LABELS } from "../utils/typeColors";
 import { NotFoundError } from "../api/errors";
-import { NotFound } from "../components/errors/NotFound";
 import type { IssueStatus } from "../types";
+import { Modal } from "../components/ui/Modal";
+import { EditIssueForm } from "../components/forms/EditIssueForm";
 
-export function IssueDetail() {
-  const { issueId } = useParams() as { issueId: string };
-  const navigate = useNavigate();
+interface IssueDetailProps {
+  issueId: string;
+  projectId: string;
+  onClose: () => void;
+}
+
+export function IssueDetail({ issueId, projectId, onClose }: IssueDetailProps) {
   const { user } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
 
-  // ── Fetch issue ───────────────────────────────────────────────────────────
   const {
     data: issue,
     isLoading: issueLoading,
@@ -37,28 +40,26 @@ export function IssueDetail() {
   } = useQuery({
     queryKey: ["issue", issueId],
     queryFn: () => issuesApi.getOne(issueId),
+    enabled: !!issueId,
   });
 
-  // ── Fetch comments ────────────────────────────────────────────────────────
   const { data: comments, isLoading: commentsLoading } = useQuery({
     queryKey: ["comments", issueId],
     queryFn: () => commentsApi.getAll(issueId),
     enabled: !!issue,
   });
 
-  // ── Update status ─────────────────────────────────────────────────────────
   const { mutate: updateStatus } = useMutation({
     mutationFn: (status: IssueStatus) =>
       issuesApi.updateStatus(issueId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issue", issueId] });
-      queryClient.invalidateQueries({ queryKey: ["issues"] });
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       toast.success("Status updated");
     },
     onError: () => toast.error("Failed to update status"),
   });
 
-  // ── Add comment ───────────────────────────────────────────────────────────
   const { mutate: addComment, isPending: commentPending } = useMutation({
     mutationFn: () => commentsApi.create(issueId, { content: comment }),
     onSuccess: () => {
@@ -69,7 +70,6 @@ export function IssueDetail() {
     onError: () => toast.error("Failed to add comment"),
   });
 
-  // ── Delete comment ────────────────────────────────────────────────────────
   const { mutate: deleteComment } = useMutation({
     mutationFn: (commentId: string) => commentsApi.delete(commentId),
     onSuccess: () => {
@@ -79,8 +79,16 @@ export function IssueDetail() {
     onError: () => toast.error("Failed to delete comment"),
   });
 
-  // ── Error states ──────────────────────────────────────────────────────────
-  if (issueError && issueErr instanceof NotFoundError) return <NotFound />;
+  // ── Error states ───────────────────────────────────────────────────────
+  if (issueError && issueErr instanceof NotFoundError) {
+    return (
+      <div className="p-6">
+        <p className="text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+          Issue not found.
+        </p>
+      </div>
+    );
+  }
 
   if (issueError) {
     return (
@@ -90,10 +98,10 @@ export function IssueDetail() {
     );
   }
 
-  // ── Loading ───────────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────────
   if (issueLoading || !issue) {
     return (
-      <div className="p-6 max-w-4xl mx-auto space-y-4">
+      <div className="p-6 space-y-4">
         <Skeleton className="h-6 w-24" />
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-4 w-full" />
@@ -111,59 +119,62 @@ export function IssueDetail() {
       className="min-h-full"
       style={{ backgroundColor: "rgb(var(--background))" }}
     >
-      <div className="max-w-4xl mx-auto px-6 py-6">
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm mb-4 hover:opacity-70 transition-opacity"
-          style={{ color: "rgb(var(--text-secondary))" }}
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
+      <div className="px-6 py-4">
+        {/* Header with close button */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded"
+              style={{ backgroundColor: typeColors.bg, color: typeColors.text }}
+            >
+              {TYPE_LABELS[issue.type]}
+            </span>
+            <IssueKey
+              projectKey={issue.project_id.slice(0, 4).toUpperCase()}
+              issueNumber={issue.issue_number}
+              clickable={false}
             />
-          </svg>
-          Back
-        </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setEditOpen(true)}
+            >
+              Edit
+            </Button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
+              style={{ color: "rgb(var(--text-secondary))" }}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         <div className="flex gap-6">
-          {/* ── Main content ───────────────────────────────────────────── */}
+          {/* Main content */}
           <div className="flex-1 min-w-0">
-            {/* Issue key + type */}
-            <div className="flex items-center gap-2 mb-3">
-              <span
-                className="text-xs font-medium px-2 py-0.5 rounded"
-                style={{
-                  backgroundColor: typeColors.bg,
-                  color: typeColors.text,
-                }}
-              >
-                {TYPE_LABELS[issue.type]}
-              </span>
-              <IssueKey
-                projectKey={issue.project_id.slice(0, 4).toUpperCase()}
-                issueNumber={issue.issue_number}
-                clickable={false}
-              />
-            </div>
-
-            {/* Title */}
             <h1
-              className="text-xl font-semibold mb-4 leading-snug"
+              className="text-lg font-semibold mb-4 leading-snug"
               style={{ color: "rgb(var(--text-primary))" }}
             >
               {issue.title}
             </h1>
 
-            {/* Description */}
             {issue.description ? (
               <div
                 className="text-sm leading-relaxed mb-6"
@@ -189,7 +200,6 @@ export function IssueDetail() {
                 Comments {comments ? `(${comments.length})` : ""}
               </h2>
 
-              {/* Comment input */}
               {user && (
                 <div className="flex gap-3 mb-6">
                   <Avatar
@@ -202,7 +212,7 @@ export function IssueDetail() {
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      placeholder="Add a comment... use @handle to mention someone"
+                      placeholder="Add a comment..."
                       rows={3}
                       className="w-full px-3 py-2 text-sm rounded-lg resize-none"
                       style={{
@@ -225,7 +235,6 @@ export function IssueDetail() {
                 </div>
               )}
 
-              {/* Comments list */}
               {commentsLoading && (
                 <div className="space-y-4">
                   {[1, 2].map((i) => (
@@ -245,17 +254,17 @@ export function IssueDetail() {
                   className="text-sm"
                   style={{ color: "rgb(var(--text-tertiary))" }}
                 >
-                  No comments yet. Be the first.
+                  No comments yet.
                 </p>
               )}
 
               <div className="space-y-4">
                 {comments?.map((c) => (
                   <div key={c.id} className="flex gap-3">
-                    {c.user && (
+                    {c.users && (
                       <Avatar
-                        name={c.user.name}
-                        handle={c.user.user_handle}
+                        name={c.users.name}
+                        handle={c.users.user_handle}
                         size="sm"
                         className="flex-shrink-0 mt-0.5"
                       />
@@ -266,7 +275,7 @@ export function IssueDetail() {
                           className="text-xs font-medium"
                           style={{ color: "rgb(var(--text-primary))" }}
                         >
-                          {c.user?.name}
+                          {c.users?.name}
                         </span>
                         <span
                           className="text-xs"
@@ -299,8 +308,8 @@ export function IssueDetail() {
             </div>
           </div>
 
-          {/* ── Sidebar ────────────────────────────────────────────────── */}
-          <div className="w-56 flex-shrink-0">
+          {/* Sidebar */}
+          <div className="w-48 flex-shrink-0">
             <div
               className="rounded-xl p-4 space-y-4"
               style={{
@@ -472,6 +481,28 @@ export function IssueDetail() {
                   })}
                 </span>
               </div>
+              {/* Edit Issue Modal */}
+              <Modal
+                open={editOpen}
+                onClose={() => setEditOpen(false)}
+                title="Edit issue"
+                size="md"
+              >
+                <EditIssueForm
+                  issue={issue}
+                  projectId={projectId}
+                  onSuccess={() => {
+                    setEditOpen(false);
+                    queryClient.invalidateQueries({
+                      queryKey: ["issue", issueId],
+                    });
+                    queryClient.invalidateQueries({
+                      queryKey: ["issues", projectId],
+                    });
+                  }}
+                  onCancel={() => setEditOpen(false)}
+                />
+              </Modal>
             </div>
           </div>
         </div>

@@ -2,9 +2,12 @@ import { formatDistanceToNow } from "date-fns";
 
 interface ActivityEvent {
   id: string;
-  table_name: string;
-  event_type: string;
-  payload: Record<string, unknown>;
+  payload: {
+    table_name: string;
+    event_type: string;
+    record: Record<string, unknown> | null;
+    old_record: Record<string, unknown> | null;
+  };
   created_at: string;
 }
 
@@ -13,18 +16,14 @@ interface ActivityItemProps {
 }
 
 function getActivityLabel(event: ActivityEvent): string {
-  const { table_name, event_type, payload } = event;
-  const record = payload.record as Record<string, unknown> | undefined;
+  const { table_name, event_type, record, old_record } = event.payload;
 
   switch (table_name) {
     case "issues": {
       const title = (record?.title as string) ?? "An issue";
       if (event_type === "INSERT") return `Issue "${title}" was created`;
       if (event_type === "DELETE") return `An issue was deleted`;
-      const oldRecord = payload.old_record as
-        | Record<string, unknown>
-        | undefined;
-      if (record?.status !== oldRecord?.status) {
+      if (record?.status !== old_record?.status) {
         return `"${title}" moved to ${record?.status}`;
       }
       return `"${title}" was updated`;
@@ -41,7 +40,9 @@ function getActivityLabel(event: ActivityEvent): string {
       if (event_type === "DELETE") return "A member left the project";
       return "Member role was updated";
     default:
-      return `${table_name} ${event_type.toLowerCase()}`;
+      return `${table_name ?? "Unknown"} ${
+        event_type?.toLowerCase() ?? "updated"
+      }`;
   }
 }
 
@@ -61,13 +62,15 @@ function getActivityIcon(tableName: string): string {
 }
 
 export function ActivityItem({ event }: ActivityItemProps) {
+  const tableName = event.payload?.table_name;
+
   return (
     <div
       className="flex items-start gap-3 px-4 py-3"
       style={{ borderBottom: "1px solid rgb(var(--border))" }}
     >
       <span className="text-base flex-shrink-0 mt-0.5">
-        {getActivityIcon(event.table_name)}
+        {getActivityIcon(tableName)}
       </span>
       <div className="flex-1 min-w-0">
         <p className="text-sm" style={{ color: "rgb(var(--text-primary))" }}>

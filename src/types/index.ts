@@ -44,7 +44,12 @@ export interface Member {
   user_id: string;
   role: MemberRole;
   joined_at: string;
-  user?: Pick<User, "id" | "name" | "user_handle" | "avatar_seed">;
+  users: {
+    id: string;
+    name: string;
+    user_handle: string;
+    avatar_seed: string;
+  } | null;
 }
 
 export type MemberRole = "manager" | "developer";
@@ -113,7 +118,12 @@ export interface Comment {
   content: string;
   mentions: string[];
   created_at: string;
-  user?: Pick<User, "id" | "name" | "user_handle" | "avatar_seed">;
+  users: {
+    id: string;
+    name: string;
+    user_handle: string;
+    avatar_seed: string;
+  } | null;
 }
 
 // ─── SDUI ─────────────────────────────────────────────────────────────────────

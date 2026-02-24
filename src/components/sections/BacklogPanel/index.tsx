@@ -1,5 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useIssues } from "../../../hooks/useIssues";
 import { useIssueFilters } from "../../../hooks/useIssueFilters";
 import { BacklogRow } from "./BacklogRow";
@@ -7,6 +7,8 @@ import { BacklogFilters } from "./BacklogFilters";
 import { RowSkeleton } from "../../ui/Skeleton";
 import { PageError } from "../../ui/PageError";
 import { Button } from "../../ui/Button";
+import { Modal } from "../../ui/Modal";
+import { CreateIssueForm } from "../../forms/CreateIssueForm";
 
 interface BacklogPanelProps {
   projectId: string;
@@ -15,6 +17,7 @@ interface BacklogPanelProps {
 export function BacklogPanel({ projectId }: BacklogPanelProps) {
   const { type, priority, assignee, setIssueId } = useIssueFilters();
   const parentRef = useRef<HTMLDivElement>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const {
     data: issues,
@@ -64,7 +67,9 @@ export function BacklogPanel({ projectId }: BacklogPanelProps) {
             </span>
           )}
         </div>
-        <Button size="sm">Create issue</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          Create issue
+        </Button>
       </div>
 
       {/* Filters */}
@@ -129,6 +134,20 @@ export function BacklogPanel({ projectId }: BacklogPanelProps) {
           </div>
         </div>
       )}
+
+      {/* Create Issue Modal */}
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create issue"
+        size="md"
+      >
+        <CreateIssueForm
+          projectId={projectId}
+          onSuccess={() => setCreateOpen(false)}
+          onCancel={() => setCreateOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }

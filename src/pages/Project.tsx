@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
 import { useSSE } from "../hooks/useSSE";
 import { useSDUI } from "../hooks/useSDUI";
+import { useIssueFilters } from "../hooks/useIssueFilters";
 import { SDUIRenderer } from "../engine/SDUIRenderer";
+import { IssueDetail } from "./IssueDetail";
 import { BoardSkeleton } from "../components/ui/Skeleton";
 import { PageError } from "../components/ui/PageError";
 import { NotFound } from "../components/errors/NotFound";
@@ -14,8 +16,8 @@ import { NotFoundError, ForbiddenError } from "../api/errors";
 export function Project() {
   const { projectId } = useParams() as { projectId: string };
   const [view] = useQueryState("view", { defaultValue: "board" });
+  const { issueId, setIssueId } = useIssueFilters();
 
-  // Verify user has access to project
   const {
     isLoading: projectLoading,
     isError: projectError,
@@ -25,7 +27,6 @@ export function Project() {
     queryFn: () => projectsApi.getOne(projectId),
   });
 
-  // Fetch SDUI layout
   const {
     layout,
     isLoading: layoutLoading,
@@ -33,21 +34,15 @@ export function Project() {
     refetch: refetchLayout,
   } = useSDUI(projectId);
 
-  // Open SSE connection for real-time updates
   useSSE(projectId);
 
-  // ── Error states ──────────────────────────────────────────────────────────
   if (projectError) {
     if (projectErr instanceof NotFoundError) return <NotFound />;
     if (projectErr instanceof ForbiddenError) return <Forbidden />;
   }
 
-  // ── Loading state ─────────────────────────────────────────────────────────
-  if (projectLoading || layoutLoading) {
-    return <BoardSkeleton />;
-  }
+  if (projectLoading || layoutLoading) return <BoardSkeleton />;
 
-  // ── Layout error ──────────────────────────────────────────────────────────
   if (layoutError) {
     return (
       <div className="p-6">
@@ -60,8 +55,36 @@ export function Project() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <SDUIRenderer layout={layout ?? []} projectId={projectId} view={view} />
+
+      {/* Issue detail slide-over */}
+      {issueId && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 z-10"
+            style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+            onClick={() => setIssueId("")}
+          />
+
+          {/* Panel */}
+          <div
+            className="absolute right-0 top-0 h-full z-20 overflow-auto shadow-xl"
+            style={{
+              width: "560px",
+              backgroundColor: "rgb(var(--background))",
+              borderLeft: "1px solid rgb(var(--border))",
+            }}
+          >
+            <IssueDetail
+              issueId={issueId}
+              projectId={projectId}
+              onClose={() => setIssueId("")}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

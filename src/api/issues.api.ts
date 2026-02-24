@@ -42,11 +42,11 @@ export const issuesApi = {
       typeFields?: Record<string, unknown>;
     }
   ) =>
-    makeApiCall<Issue>({
+    makeApiCall<{ issue: Issue; autoPromoted: boolean }>({
       method: "POST",
       url: ENDPOINTS.issues.create(projectId),
       body: payload,
-      unwrap: "issue",
+      unwrap: ["issue", "autoPromoted"],
     }),
 
   update: (
@@ -63,11 +63,11 @@ export const issuesApi = {
       typeFields: Record<string, unknown>;
     }>
   ) =>
-    makeApiCall<Issue>({
+    makeApiCall<{ issue: Issue; autoPromoted: boolean }>({
       method: "PATCH",
       url: ENDPOINTS.issues.update(issueId),
       body: payload,
-      unwrap: "issue",
+      unwrap: ["issue", "autoPromoted"],
     }),
 
   updateStatus: (issueId: string, status: IssueStatus) =>

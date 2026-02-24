@@ -42,6 +42,77 @@ interface CreateIssueFormProps {
   onCancel?: () => void;
 }
 
+// ─── Reusable field wrapper ───────────────────────────────────────────────────
+function FormField({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label
+        className="text-xs font-semibold uppercase tracking-wide"
+        style={{ color: "rgb(var(--text-tertiary))" }}
+      >
+        {label}
+      </label>
+      {children}
+      {error && (
+        <p className="text-xs" style={{ color: "rgb(var(--error))" }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Reusable select ─────────────────────────────────────────────────────────
+function FormSelect({
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className="w-full px-3 py-2 text-sm rounded-lg transition-colors focus:outline-2"
+      style={{
+        backgroundColor: "rgb(var(--surface-alt))",
+        color: "rgb(var(--text-primary))",
+        border: "1px solid rgb(var(--border))",
+      }}
+    >
+      {children}
+    </select>
+  );
+}
+
+// ─── Divider ─────────────────────────────────────────────────────────────────
+function Divider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <div
+        className="flex-1 h-px"
+        style={{ backgroundColor: "rgb(var(--border))" }}
+      />
+      <span
+        className="text-xs font-medium"
+        style={{ color: "rgb(var(--text-tertiary))" }}
+      >
+        {label}
+      </span>
+      <div
+        className="flex-1 h-px"
+        style={{ backgroundColor: "rgb(var(--border))" }}
+      />
+    </div>
+  );
+}
+
+// ─── Form ─────────────────────────────────────────────────────────────────────
 export function CreateIssueForm({
   projectId,
   sprintId,
@@ -82,31 +153,17 @@ export function CreateIssueForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       {/* Type */}
-      <div className="flex flex-col gap-1.5">
-        <label
-          className="text-sm font-medium"
-          style={{ color: "rgb(var(--text-primary))" }}
-        >
-          Type
-        </label>
-        <select
-          {...register("type")}
-          className="px-3 py-2 text-sm rounded-lg"
-          style={{
-            backgroundColor: "rgb(var(--surface))",
-            color: "rgb(var(--text-primary))",
-            border: "1px solid rgb(var(--border))",
-          }}
-        >
-          <option value="task">Task</option>
-          <option value="story">Story</option>
-          <option value="bug">Bug</option>
-          <option value="epic">Epic</option>
-          <option value="subtask">Subtask</option>
-        </select>
-      </div>
+      <FormField label="Issue type">
+        <FormSelect {...register("type")}>
+          <option value="task">🔧 Task</option>
+          <option value="story">📖 Story</option>
+          <option value="bug">🐛 Bug</option>
+          <option value="epic">⚡ Epic</option>
+          <option value="subtask">↳ Subtask</option>
+        </FormSelect>
+      </FormField>
 
       {/* Title */}
       <Input
@@ -117,121 +174,61 @@ export function CreateIssueForm({
       />
 
       {/* Description */}
-      <div className="flex flex-col gap-1.5">
-        <label
-          className="text-sm font-medium"
-          style={{ color: "rgb(var(--text-primary))" }}
-        >
-          Description
-        </label>
+      <FormField label="Description">
         <textarea
           {...register("description")}
           placeholder="Add more detail..."
           rows={3}
-          className="px-3 py-2 text-sm rounded-lg resize-none"
+          className="w-full px-3 py-2 text-sm rounded-lg resize-none transition-colors focus:outline-2"
           style={{
-            backgroundColor: "rgb(var(--surface))",
+            backgroundColor: "rgb(var(--surface-alt))",
             color: "rgb(var(--text-primary))",
             border: "1px solid rgb(var(--border))",
           }}
         />
-      </div>
+      </FormField>
 
-      {/* Priority + Status row */}
+      <Divider label="Details" />
+
+      {/* Priority + Status */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label
-            className="text-sm font-medium"
-            style={{ color: "rgb(var(--text-primary))" }}
-          >
-            Priority
-          </label>
-          <select
-            {...register("priority")}
-            className="px-3 py-2 text-sm rounded-lg"
-            style={{
-              backgroundColor: "rgb(var(--surface))",
-              color: "rgb(var(--text-primary))",
-              border: "1px solid rgb(var(--border))",
-            }}
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
+        <FormField label="Priority">
+          <FormSelect {...register("priority")}>
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="high">🟠 High</option>
+            <option value="critical">🔴 Critical</option>
+          </FormSelect>
+        </FormField>
 
-        <div className="flex flex-col gap-1.5">
-          <label
-            className="text-sm font-medium"
-            style={{ color: "rgb(var(--text-primary))" }}
-          >
-            Status
-          </label>
-          <select
-            {...register("status")}
-            className="px-3 py-2 text-sm rounded-lg"
-            style={{
-              backgroundColor: "rgb(var(--surface))",
-              color: "rgb(var(--text-primary))",
-              border: "1px solid rgb(var(--border))",
-            }}
-          >
+        <FormField label="Status">
+          <FormSelect {...register("status")}>
             <option value="backlog">Backlog</option>
             <option value="todo">Todo</option>
             <option value="in_progress">In Progress</option>
             <option value="in_review">In Review</option>
             <option value="testing">Testing</option>
             <option value="done">Done</option>
-          </select>
-        </div>
+          </FormSelect>
+        </FormField>
       </div>
 
       {/* Assignee */}
-      <div className="flex flex-col gap-1.5">
-        <label
-          className="text-sm font-medium"
-          style={{ color: "rgb(var(--text-primary))" }}
-        >
-          Assignee
-        </label>
-        <select
-          {...register("assigneeId")}
-          className="px-3 py-2 text-sm rounded-lg"
-          style={{
-            backgroundColor: "rgb(var(--surface))",
-            color: "rgb(var(--text-primary))",
-            border: "1px solid rgb(var(--border))",
-          }}
-        >
+      <FormField label="Assignee">
+        <FormSelect {...register("assigneeId")}>
           <option value="">Unassigned</option>
           {members?.map((m) => (
             <option key={m.user_id} value={m.user_id}>
-              {m.user?.name ?? m.user_id}
+              {m.users?.name ?? m.user_id}
             </option>
           ))}
-        </select>
-      </div>
+        </FormSelect>
+      </FormField>
 
       {/* Sprint */}
-      <div className="flex flex-col gap-1.5">
-        <label
-          className="text-sm font-medium"
-          style={{ color: "rgb(var(--text-primary))" }}
-        >
-          Sprint
-        </label>
-        <select
-          {...register("sprintId")}
-          className="px-3 py-2 text-sm rounded-lg"
-          style={{
-            backgroundColor: "rgb(var(--surface))",
-            color: "rgb(var(--text-primary))",
-            border: "1px solid rgb(var(--border))",
-          }}
-        >
-          <option value="">Backlog</option>
+      <FormField label="Sprint">
+        <FormSelect {...register("sprintId")}>
+          <option value="">Backlog (no sprint)</option>
           {sprints
             ?.filter((s) => s.status !== "closed")
             .map((s) => (
@@ -239,10 +236,10 @@ export function CreateIssueForm({
                 {s.name} ({s.status})
               </option>
             ))}
-        </select>
-      </div>
+        </FormSelect>
+      </FormField>
 
-      {/* Story points + Due date row */}
+      {/* Story points + Due date */}
       <div className="grid grid-cols-2 gap-3">
         <Input
           label="Story points"
@@ -255,7 +252,10 @@ export function CreateIssueForm({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end pt-2">
+      <div
+        className="flex gap-3 justify-end pt-3 mt-1"
+        style={{ borderTop: "1px solid rgb(var(--border))" }}
+      >
         {onCancel && (
           <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel

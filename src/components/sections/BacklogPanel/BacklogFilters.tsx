@@ -75,9 +75,9 @@ export function BacklogFilters({ projectId }: BacklogFiltersProps) {
         }}
       >
         <option value="">All assignees</option>
-        {members?.map((m: any) => (
+        {members?.map((m) => (
           <option key={m.user_id} value={m.user_id}>
-            {m.user?.name ?? m.user_id}
+            {m.users?.name ?? m.user_id}
           </option>
         ))}
       </select>

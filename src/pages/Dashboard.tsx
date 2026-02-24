@@ -36,8 +36,8 @@ type CreateProjectValues = z.infer<typeof createProjectSchema>;
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export function Dashboard() {
-  const { user } = useAuth();
-  console.log("[Dashboard] user:", user);
+  const { user, session } = useAuth();
+  console.log("[Dashboard] session:", !!session);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -51,6 +51,7 @@ export function Dashboard() {
   } = useQuery({
     queryKey: ["projects"],
     queryFn: projectsApi.getAll,
+    enabled: !!session,
   });
   console.log("[Dashboard] query:", { isLoading, isError, projects });
 

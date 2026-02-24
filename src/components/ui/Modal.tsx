@@ -106,7 +106,7 @@ export function Modal({
         )}
 
         {/* Content */}
-        <div className="overflow-y-auto flex-1 px-6 py-4">{children}</div>
+        <div className="overflow-y-auto flex-1 px-6 py-5 pb-6">{children}</div>
       </div>
     </div>
   );

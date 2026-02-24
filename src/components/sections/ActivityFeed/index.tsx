@@ -10,11 +10,14 @@ interface ActivityFeedProps {
   projectId: string;
 }
 
-interface ActivityEvent {
+export interface ActivityEvent {
   id: string;
-  table_name: string;
-  event_type: string;
-  payload: Record<string, unknown>;
+  payload: {
+    table_name: string;
+    event_type: string;
+    record: Record<string, unknown> | null;
+    old_record: Record<string, unknown> | null;
+  };
   created_at: string;
 }
 
@@ -32,14 +35,14 @@ export function ActivityFeed({ projectId }: ActivityFeedProps) {
       const { data, error } = await supabase
         .from("webhook_events")
         .select("*")
-        .eq("processed", true)
+        .not("processed_at", "is", null)
         .order("created_at", { ascending: false })
         .limit(50);
-
       if (error) throw error;
       return data as ActivityEvent[];
     },
     staleTime: 30_000,
+    enabled: !!projectId,
   });
 
   const virtualizer = useVirtualizer({

@@ -20,7 +20,7 @@ export function BoardColumn({
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
-    <div className="flex flex-col w-64 flex-shrink-0">
+    <div className="flex flex-col flex-1 min-w-52">
       {/* Column header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

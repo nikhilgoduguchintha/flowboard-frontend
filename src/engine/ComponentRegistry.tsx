@@ -3,9 +3,7 @@ import { KanbanBoard } from "../components/sections/KanbanBoard";
 import { BacklogPanel } from "../components/sections/BacklogPanel";
 import { AnalyticsPanel } from "../components/sections/AnalyticsPanel";
 import { MyIssues } from "../components/sections/MyIssues";
-import { SprintTimer } from "../components/sections/SprintTimer";
 import { SprintPlanning } from "../components/sections/SprintPlanning";
-import { Onboarding } from "../components/sections/Onboarding";
 import { OverdueAlert } from "../components/sections/OverdueAlert";
 import { OpenBugsAlert } from "../components/sections/OpenBugsAlert";
 import { SprintCompletion } from "../components/sections/SprintCompletion";
@@ -25,9 +23,7 @@ export const ComponentRegistry: Record<string, SectionComponent> = {
   backlog: reg(BacklogPanel),
   analytics: reg(AnalyticsPanel),
   issue_list: reg(MyIssues),
-  timer: reg(SprintTimer),
   planning: reg(SprintPlanning),
-  checklist: reg(Onboarding),
   alert: reg(AlertResolver),
   summary: reg(SprintCompletion),
   feed: reg(ActivityFeed),

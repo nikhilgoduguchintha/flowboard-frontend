@@ -6,7 +6,6 @@ import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { ValidationError } from "../api/errors";
-import { useAuthContext } from "@/lib/AuthContext";
 import { useEffect } from "react";
 
 const schema = z
@@ -45,7 +44,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export function Signup() {
-  const { signup } = useAuth();
+  const { isLoggedIn, loading, signup } = useAuth();
 
   const {
     register,
@@ -56,7 +55,6 @@ export function Signup() {
     resolver: zodResolver(schema),
     defaultValues: { isManager: false },
   });
-  const { isLoggedIn, loading } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {

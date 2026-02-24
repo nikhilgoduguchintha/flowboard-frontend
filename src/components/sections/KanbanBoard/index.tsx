@@ -16,6 +16,8 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { IssueCard } from "../../ui/IssueCard";
+import { Modal } from "@/components/ui/Modal";
+import { CreateIssueForm } from "@/components/forms/CreateIssueForm";
 
 interface KanbanBoardProps {
   projectId: string;
@@ -31,6 +33,9 @@ const COLUMNS: { status: IssueStatus; label: string }[] = [
 
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const { setIssueId } = useIssueFilters();
+
+  const [createOpen, setCreateOpen] = useState(false);
+
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
 
   const { data: issues, isLoading, isError, refetch } = useIssues(projectId);
@@ -83,7 +88,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         >
           Kanban Board
         </span>
-        <Button size="sm">Add issue</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          Add issue
+        </Button>
       </div>
 
       {/* Columns */}
@@ -115,6 +122,18 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           )}
         </DragOverlay>
       </DndContext>
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create issue"
+        size="md"
+      >
+        <CreateIssueForm
+          projectId={projectId}
+          onSuccess={() => setCreateOpen(false)}
+          onCancel={() => setCreateOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }
