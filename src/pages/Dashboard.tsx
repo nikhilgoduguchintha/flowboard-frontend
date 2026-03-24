@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectsApi } from "../api/projects.api";
@@ -15,9 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatDistanceToNow } from "date-fns";
 import type { Project } from "../types";
-import { supabase } from "../lib/supabase";
-// ─── Create Project Form Schema ───────────────────────────────────────────────
 
+// ─── Create Project Form Schema ───────────────────────────────
 const createProjectSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
   key: z
