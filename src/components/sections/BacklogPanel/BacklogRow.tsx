@@ -68,6 +68,7 @@ export function BacklogRow({ issue, projectId, onClick }: BacklogRowProps) {
         <Avatar
           name={issue.assignee.name}
           handle={issue.assignee.user_handle}
+          avatarUrl={issue.assignee.avatar_seed}
           size="sm"
           className="flex-shrink-0"
         />

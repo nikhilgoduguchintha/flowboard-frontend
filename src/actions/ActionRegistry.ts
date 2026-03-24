@@ -78,12 +78,8 @@ export const ActionRegistry = {
     actions.forEach((action) => {
       try {
         this.handle(action as Action, projectId);
-      } catch (err) {
-        console.error(
-          "[ActionRegistry] Failed to handle action:",
-          action.type,
-          err
-        );
+      } catch {
+        // silently ignore unhandled actions
       }
     });
   },
@@ -179,13 +175,8 @@ export const ActionRegistry = {
         break;
       }
 
-      default: {
-        console.warn(
-          "[ActionRegistry] Unknown action type:",
-          (action as BaseAction).type
-        );
+      default:
         break;
-      }
     }
   },
 };

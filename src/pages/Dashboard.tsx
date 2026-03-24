@@ -37,7 +37,6 @@ type CreateProjectValues = z.infer<typeof createProjectSchema>;
 
 export function Dashboard() {
   const { user, session } = useAuth();
-  console.log("[Dashboard] session:", !!session);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -53,8 +52,6 @@ export function Dashboard() {
     queryFn: projectsApi.getAll,
     enabled: !!session,
   });
-  console.log("[Dashboard] query:", { isLoading, isError, projects });
-
   const { mutate: createProject, isPending } = useMutation({
     mutationFn: (values: CreateProjectValues) => projectsApi.create(values),
     onSuccess: (project) => {
@@ -69,11 +66,6 @@ export function Dashboard() {
       );
     },
   });
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[Dashboard] session check:", !!session);
-    });
-  }, []);
 
   const {
     register,

@@ -84,6 +84,7 @@ export function Settings({ projectId }: SettingsProps) {
                 <Avatar
                   name={member.users?.name ?? ""}
                   handle={member.users?.user_handle ?? ""}
+                  avatarUrl={member.users?.avatar_seed}
                   size="sm"
                 />
                 <div className="flex-1 min-w-0">

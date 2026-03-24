@@ -28,4 +28,11 @@ export const authApi = {
       method: "POST",
       url: ENDPOINTS.auth.logout,
     }),
+
+  completeProfile: (payload: { userHandle: string; isManager: boolean }) =>
+    makeApiCall<{ user: User }>({
+      method: "POST",
+      url: ENDPOINTS.auth.completeProfile,
+      body: payload,
+    }),
 };

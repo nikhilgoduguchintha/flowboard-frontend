@@ -205,6 +205,7 @@ export function IssueDetail({ issueId, projectId, onClose }: IssueDetailProps) {
                   <Avatar
                     name={user.name}
                     handle={user.user_handle}
+                    avatarUrl={user.avatar_seed}
                     size="sm"
                     className="flex-shrink-0 mt-1"
                   />
@@ -265,6 +266,7 @@ export function IssueDetail({ issueId, projectId, onClose }: IssueDetailProps) {
                       <Avatar
                         name={c.users.name}
                         handle={c.users.user_handle}
+                        avatarUrl={c.users.avatar_seed}
                         size="sm"
                         className="flex-shrink-0 mt-0.5"
                       />
@@ -379,6 +381,7 @@ export function IssueDetail({ issueId, projectId, onClose }: IssueDetailProps) {
                     <Avatar
                       name={issue.assignee.name}
                       handle={issue.assignee.user_handle}
+                      avatarUrl={issue.assignee.avatar_seed}
                       size="sm"
                     />
                     <span
@@ -411,6 +414,7 @@ export function IssueDetail({ issueId, projectId, onClose }: IssueDetailProps) {
                     <Avatar
                       name={issue.reporter.name}
                       handle={issue.reporter.user_handle}
+                      avatarUrl={issue.reporter.avatar_seed}
                       size="sm"
                     />
                     <span

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import type { User } from "../types";
 import type { Session } from "@supabase/supabase-js";
@@ -8,6 +8,7 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   isLoggedIn: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
@@ -15,22 +16,36 @@ export const AuthContext = createContext<AuthContextValue>({
   session: null,
   loading: true,
   isLoggedIn: false,
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const profileFetched = useRef(false);
+  const sessionRef = useRef<Session | null>(null);
+
+  // Expose a way to manually re-fetch the profile (used after onboarding completes)
+  const refreshUser = useCallback(async () => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    const { data: profile } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", currentSession.user.id)
+      .single();
+    setUser(profile ?? null);
+  }, []);
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[AuthContext] onAuthStateChange", event, !!session);
-
       setSession(session);
-      setLoading(false);
+      sessionRef.current = session;
+      setAuthLoading(false);
 
       if (!session) {
         setUser(null);
@@ -42,12 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profileFetched.current) return;
       profileFetched.current = true;
 
+      setProfileLoading(true);
       supabase
         .from("users")
         .select("*")
         .eq("id", session.user.id)
         .single()
-        .then(({ data: profile }) => setUser(profile ?? null));
+        .then(({ data: profile }) => {
+          setUser(profile ?? null);
+          setProfileLoading(false);
+        });
     });
 
     return () => {
@@ -61,8 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         session,
-        loading,
+        loading: authLoading || profileLoading,
         isLoggedIn: !!session,
+        refreshUser,
       }}
     >
       {children}

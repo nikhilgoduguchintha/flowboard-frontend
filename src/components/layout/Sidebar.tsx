@@ -143,7 +143,7 @@ export function Sidebar() {
           className="flex items-center gap-2 px-3 py-3 flex-shrink-0"
           style={{ borderTop: "1px solid rgb(var(--border))" }}
         >
-          <Avatar name={user.name} handle={user.user_handle} size="sm" />
+          <Avatar name={user.name} handle={user.user_handle} avatarUrl={user.avatar_seed} size="sm" />
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p

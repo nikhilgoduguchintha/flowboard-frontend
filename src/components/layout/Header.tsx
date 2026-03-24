@@ -105,7 +105,7 @@ export function Header() {
 
           {/* User avatar */}
           {user && (
-            <Avatar name={user.name} handle={user.user_handle} size="sm" />
+            <Avatar name={user.name} handle={user.user_handle} avatarUrl={user.avatar_seed} size="sm" />
           )}
         </div>
 

@@ -39,12 +39,6 @@ axiosInstance.interceptors.request.use(async (config) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  console.log(
-    "[interceptor] token exists:",
-    !!session?.access_token,
-    config.url
-  );
-
   if (session?.access_token) {
     config.headers.Authorization = `Bearer ${session.access_token}`;
   }
@@ -105,7 +99,6 @@ export async function makeApiCall<T>({
   params,
   unwrap,
 }: ApiCallConfig): Promise<T> {
-  console.log("[makeApiCall]", method, url);
   try {
     const response = await axiosInstance.request({
       method,
@@ -113,7 +106,6 @@ export async function makeApiCall<T>({
       data: body,
       params,
     });
-    console.log("[makeApiCall] response", url, response.status, response.data);
 
     // Unwrap specific field if requested
     if (unwrap) {

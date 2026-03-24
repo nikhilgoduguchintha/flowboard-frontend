@@ -7,9 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isLoggedIn, loading } = useAuthContext();
-
-  console.log("[ProtectedRoute] render", { isLoggedIn, loading });
+  const { isLoggedIn, loading, user } = useAuthContext();
 
   if (loading) {
     return (
@@ -22,7 +20,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
+  // No session at all → go to login
   if (!isLoggedIn) return <Navigate to="/login" replace />;
+
+  // Has session but no profile row → incomplete Google OAuth signup
+  if (!user) return <Navigate to="/onboarding" replace />;
 
   return <>{children}</>;
 }

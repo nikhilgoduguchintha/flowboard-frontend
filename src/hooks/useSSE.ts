@@ -11,12 +11,9 @@ export function useSSE(projectId: string) {
 
   useEffect(() => {
     if (!projectId) return;
-    console.log("[SSE] effect running for projectId:", projectId);
 
     const connect = async () => {
       if (esRef.current?.readyState === EventSource.OPEN) return;
-
-      console.log("[SSE] connecting...");
 
       const {
         data: { session },
@@ -31,7 +28,6 @@ export function useSSE(projectId: string) {
       esRef.current = es;
 
       es.onopen = () => {
-        console.log("[SSE] Connected");
         retryCount.current = 0;
         queryClient.invalidateQueries({ queryKey: ["layout", projectId] });
       };
@@ -42,8 +38,8 @@ export function useSSE(projectId: string) {
             actions: Array<{ type: string; [key: string]: unknown }>;
           };
           ActionRegistry.execute(actions, projectId);
-        } catch (err) {
-          console.error("[SSE] Failed to parse update event:", err);
+        } catch {
+          // silently ignore malformed update events
         }
       });
 
@@ -54,8 +50,8 @@ export function useSSE(projectId: string) {
             [{ type: "show_notification", ...data }],
             projectId
           );
-        } catch (err) {
-          console.error("[SSE] Failed to parse notification event:", err);
+        } catch {
+          // silently ignore malformed notification events
         }
       });
 
@@ -63,10 +59,7 @@ export function useSSE(projectId: string) {
         es.close();
         retryCount.current++;
         if (retryCount.current < MAX_RETRIES) {
-          console.warn(`[SSE] Reconnecting... attempt ${retryCount.current}`);
           setTimeout(connect, 2000 * retryCount.current);
-        } else {
-          console.warn("[SSE] Max retries reached, giving up");
         }
       };
     };
@@ -74,7 +67,6 @@ export function useSSE(projectId: string) {
     connect();
 
     return () => {
-      console.log("[SSE] cleanup for projectId:", projectId);
       esRef.current?.close();
       esRef.current = null;
       retryCount.current = 0;

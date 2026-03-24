@@ -96,6 +96,7 @@ export function IssueCard({
             <Avatar
               name={issue.assignee.name}
               handle={issue.assignee.user_handle}
+              avatarUrl={issue.assignee.avatar_seed}
               size="sm"
             />
           ) : (

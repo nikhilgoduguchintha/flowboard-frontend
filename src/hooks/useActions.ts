@@ -86,7 +86,6 @@ export function useActions() {
           }
 
           default:
-            console.warn("[ActionRegistry] Unknown action type:", action.type);
         }
       });
     },

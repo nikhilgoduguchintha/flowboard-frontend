@@ -5,6 +5,7 @@ export const ENDPOINTS = {
     signup: `${BASE}/auth/signup`,
     login: `${BASE}/auth/login`,
     logout: `${BASE}/auth/logout`,
+    completeProfile: `${BASE}/auth/complete-profile`,
   },
 
   projects: {

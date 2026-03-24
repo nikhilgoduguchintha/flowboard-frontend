@@ -31,9 +31,6 @@ export function SDUIRenderer({ layout, projectId, view }: SDUIRendererProps) {
         const Component = ComponentRegistry[section.type];
 
         if (!Component) {
-          console.warn(
-            `[SDUIRenderer] No component registered for type: "${section.type}"`
-          );
           return null;
         }
 

@@ -15,8 +15,20 @@ export function AuthCallback() {
         return;
       }
 
-      // Successfully authenticated — go to dashboard
-      navigate("/dashboard", { replace: true });
+      // Check if this user already has a profile in our users table
+      const { data: profile } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", data.session.user.id)
+        .single();
+
+      if (!profile) {
+        // New Google user — needs to complete their profile
+        navigate("/onboarding", { replace: true });
+      } else {
+        // Existing user — go straight to dashboard
+        navigate("/dashboard", { replace: true });
+      }
     };
 
     handleCallback();

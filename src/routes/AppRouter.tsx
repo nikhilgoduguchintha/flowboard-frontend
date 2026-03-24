@@ -10,6 +10,7 @@ import { Signup } from "../pages/Signup";
 import { Dashboard } from "../pages/Dashboard";
 import { Project } from "../pages/Project";
 import { AuthCallback } from "../pages/AuthCallback";
+import { Onboarding } from "../pages/Onboarding";
 
 export function AppRouter() {
   return (
@@ -18,6 +19,7 @@ export function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/error/not-found" element={<NotFound />} />
         <Route path="/error/forbidden" element={<Forbidden />} />
         <Route path="/error/server" element={<ServerError />} />
