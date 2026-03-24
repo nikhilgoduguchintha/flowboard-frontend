@@ -53,8 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Prevent duplicate profile fetches across SIGNED_IN + INITIAL_SESSION
-      if (profileFetched.current) return;
+      // Always re-fetch on SIGNED_IN (new login / OAuth) so we never serve
+      // a stale profile from a previous session when the user switches accounts.
+      // For INITIAL_SESSION, skip if we've already fetched for this session.
+      if (event !== "SIGNED_IN" && profileFetched.current) return;
       profileFetched.current = true;
 
       setProfileLoading(true);
